@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lumicent</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #next-page-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    #next-page-button:hover {
+      background-color: #555;
+    }
+    
+    #next-page-button:active {
+      background-color: #222;
+    }
+    
+    #next-page-button.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lumicent</h1>
+    <img src="https://i.imgur.com/YvBhVfm.jpg" alt="Game Engine Logo">
+    <a href="index.html">Create Project</a>
+  </header>
+  
+  <section id="project-list">
+    <h2>Projects</h2>
+    <div id="project-list-container">
+      <ul id="projects-1"></ul>
+    </div>
+    <button id="next-page-button">Next Page</button>
+  </section>
+  
+  <script>
+    const projects = JSON.parse(localStorage.getItem('projects')) || [];
+    let currentPage = 1;
+    const projectsPerPage = 9;
+    const totalPages = Math.ceil(projects.length / projectsPerPage);
+    const projectListContainer = document.getElementById('project-list-container');
+    const nextPageButton = document.getElementById('next-page-button');
+    
+    function displayProjects() {
+      let currentProjectIndex = (currentPage - 1) * projectsPerPage;
+      let currentListIndex = 1;
+      
+      for (let i = currentProjectIndex; i < projects.length; i++) {
+        const project = projects[i];
+        const listItem = document.createElement('li');
+        listItem.classList.add('project');
+        
+        const projectImage = document.createElement('img');
+        projectImage.classList.add('project-image');
+        projectImage.src = project.image;
+        
+        const projectInfo = document.createElement('div');
+        projectInfo.classList.add('project-info');
+        
+        const projectTitle = document.createElement('h3');
+        projectTitle.classList.add('project-title');
+        projectTitle.textContent = project.name;
+        
+        const projectDescription = document.createElement('p');
+        projectDescription.classList.add('project-description');
+        projectDescription.textContent = project.description;
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('delete-button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => {
+          projects.splice(i, 1);
+          localStorage.setItem('projects', JSON.stringify(projects));
+          listItem.remove();
+          
+          // If the last page is now empty, go back one page
+          if (currentPage > 1 && (projects.length % projectsPerPage === 0 || projects.length % projectsPerPage === 8)) {
+            currentPage--;
+            totalPages = Math.ceil(projects.length / projectsPerPage);
+            nextPageButton.classList.remove('hidden');
+          }
+        });
+        
+        projectInfo.appendChild(projectTitle);
+        projectInfo.appendChild(projectDescription);
+        projectInfo.appendChild(deleteButton);
+        
+        listItem.appendChild(projectImage);
+        listItem.appendChild(projectInfo);
+        
+        const currentList = document.getElementById(`projects-${currentListIndex}`);
+        currentList.appendChild(listItem);
+        
+        if ((i + 1) % 3 === 0 && currentListIndex < totalPages) {
+          currentListIndex++;
+          const newList = document.createElement('ul');
+          newList.id = `projects-${currentListIndex}`;
+          projectListContainer.appendChild(newList);
+        }
+        
+        if (i === currentProjectIndex + projectsPerPage - 1) {
+          break;
+        }
+      }
+      
+      if (currentPage === totalPages) {
+        nextPageButton.classList.add('hidden');
+      }
+    }
+    
+    nextPageButton.addEventListener('click', () => {
+      currentPage++;
+      displayProjects();
+    });
+    
+    displayProjects();
+  </script>
+</body>
+</html>
