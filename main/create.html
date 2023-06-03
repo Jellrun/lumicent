@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lumicent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Lumicent</h1>
+    <a href="list.html">Projects</a>
+  </header>
+  <section id="create-project">
+    <h2>Create Project</h2>
+    <form onsubmit="return validateForm()">
+      <label for="project-name">Project Name:</label>
+      <input type="text" id="project-name" name="project-name">
+      <div id="project-name-error" style="display:none;color:red;">Please enter a project name</div>
+      
+      <label for="project-desc">Project Description:</label>
+      <textarea id="project-desc" name="project-desc"></textarea>
+      <div id="project-desc-error" style="display:none;color:red;">Please enter a project description</div>
+      
+      <label for="project-image-input">Project Image:</label>
+      <input type="file" id="project-image-input" name="project-image" accept="image/*" onchange="uploadImage(this.files[0])">
+      
+      <button type="submit">Create Project</button>
+    </form>
+  </section>
+  
+  <script src="load.js"></script>
+  
+  <script>
+    function validateForm() {
+      const projectName = document.getElementById('project-name');
+      const projectNameError = document.getElementById('project-name-error');
+      const projectDesc = document.getElementById('project-desc');
+      const projectDescError = document.getElementById('project-desc-error');
+      
+      if (projectName.value === '') {
+        projectNameError.style.display = 'block';
+        return false;
+      } else {
+        projectNameError.style.display = 'none';
+      }
+      
+      if (projectDesc.value === '') {
+        projectDescError.style.display = 'block';
+        return false;
+      } else {
+        projectDescError.style.display = 'none';
+      }
+      
+      const project = {
+        name: projectName.value,
+        description: projectDesc.value,
+        image: ''
+      };
+      
+      const projects = JSON.parse(localStorage.getItem('projects')) || [];
+      projects.push(project);
+      localStorage.setItem('projects', JSON.stringify(projects));
+      
+      window.location.href = 'list.html';
+      
+      return true;
+    }
+    
+    function uploadImage(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Client-ID a380c487057e8ab'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        const imageUrl = data.data.link;
+        document.getElementById('project-image').src = imageUrl;
+        const projects = JSON.parse(localStorage.getItem('projects'));
+        projects[projects.length - 1].image = imageUrl;
+        localStorage.setItem('projects', JSON.stringify(projects));
+      })
+      .catch(error => console.error(error));
+    }
+  </script>
+</body>
+</html>
